@@ -9,9 +9,8 @@ module.exports = {
     async execute(interaction) {
         log.info(`${interaction.user.username} used the balance command`);
 
-        const balance = await TransactionModel.getBalance(interaction.user.id);
+        const balance = await TransactionModel.getBalance(interaction);
         const replyEmbed = new EmbedBuilder()
-            .setTitle(`Balance for ${interaction.user.tag}`)
             .setColor(Colors.Aqua)
             .setFields({ name: 'Balance', value: `${balance}` });
 

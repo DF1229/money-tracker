@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 const TransactionModel = require('../lib/db/model/transaction');
 const log = require('../lib/logger');
+const util = require('../lib/util');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,22 +19,21 @@ module.exports = {
     async execute(interaction) {
         log.info(`${interaction.user.username} used the input command`);
 
-
         const transRec = await TransactionModel.new(interaction);
         if (!transRec) {
             interaction.reply({ content: `Failed to save transaction in database!`, ephemeral: true });
             return log.error(`Could not register transaction in the database!`);
         }
 
-        const rawUserBalance = await TransactionModel.getBalance(interaction.user.id)
-        const formattedUserBalance = util.formatAsCurrency(rawUserBalance, userRec.currency)
+        const balance = await TransactionModel.getBalance(interaction);
+        const amount = util.toCurrency(transRec.amount, interaction.locale);
         const transactionEmbed = new EmbedBuilder()
             .setTitle(`Transaction #${transRec._id}`) // TODO: auto-incremented transaction ID's
             .setColor(Colors.Green)
             .setFields(
-                { name: 'Amount', value: `${transRec.amount}`, inline: true },
+                { name: 'Amount', value: `${amount}`, inline: true },
                 { name: 'Direction', value: `${transRec.direction}`, inline: true },
-                { name: 'New balance', value: `${formattedUserBalance}`}
+                { name: 'New balance', value: `${balance}`}
             );
 
         interaction.reply({ embeds: [transactionEmbed], ephemeral: true });
