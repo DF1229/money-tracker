@@ -8,13 +8,18 @@ module.exports = {
         .setName('input')
         .setDescription(`Input a transaction into the tracker`)
         .addStringOption(option =>
-            option.setName('direction')
-                .setDescription('Is this money coming in, or going out?')
-                .setChoices({ name: 'in', value: 'in' }, { name: 'out', value: 'out' })
+            option.setName('description')
+                .setDescription('What is this entry related to?')
+                .setMaxLength(255) // can be increased if the need for it ever presents itself, but mongoose limitations should be tested before release
                 .setRequired(true))
         .addNumberOption(option =>
             option.setName('amount')
                 .setDescription('The amount going in or out')
+                .setRequired(true))
+        .addStringOption(option =>
+            option.setName('direction')
+                .setDescription('Is this money coming in, or going out?')
+                .setChoices({ name: 'in', value: 'in' }, { name: 'out', value: 'out' })
                 .setRequired(true)),
     async execute(interaction) {
         log.info(`${interaction.user.username} used the input command`);
@@ -26,14 +31,16 @@ module.exports = {
         }
 
         const balance = await TransactionModel.getBalance(interaction);
-        const amount = util.toCurrency(transRec.amount, interaction.locale);
+        let amount = transRec.direction == 'in' ? transRec.amount : transRec.amount * -1;
+        amount = util.toCurrency(amount, interaction.locale);
+
         const transactionEmbed = new EmbedBuilder()
-            .setTitle(`Transaction #${transRec._id}`) // TODO: auto-incremented transaction ID's
+            .setFooter({ text: `ID: ${transRec._id}`})
             .setColor(Colors.Green)
             .setFields(
                 { name: 'Amount', value: `${amount}`, inline: true },
-                { name: 'Direction', value: `${transRec.direction}`, inline: true },
-                { name: 'New balance', value: `${balance}`}
+                { name: 'New balance', value: `${balance}`, inline: true },
+                { name: 'Description', value: `${transRec.description}` },
             );
 
         interaction.reply({ embeds: [transactionEmbed], ephemeral: true });
