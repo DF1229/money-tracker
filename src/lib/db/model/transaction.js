@@ -9,6 +9,7 @@ const transactionSchema = new mongoose.Schema(
         amount: Number,
         ledger: Number,                 // Ledger ID
         direction: { type: String, enum: ['in', 'out'] },
+        description: String,
 
         lastModifiedBy: String,         // Snowflake
         lastModifiedAt: {type: Date, default: Date.now() },
@@ -23,6 +24,7 @@ const transactionSchema = new mongoose.Schema(
             async new(interaction) {
                 const amount = interaction.options.getNumber('amount');
                 const direction = interaction.options.getString('direction');
+                const description = interaction.options.getString('description')
                 const user = interaction.user.id;
 
                 try {
@@ -31,6 +33,7 @@ const transactionSchema = new mongoose.Schema(
                         amount,
                         ledger: 0,  // TODO
                         direction,
+                        description,
                         lastModifiedBy: user,
                     });
                 } catch (err) {
