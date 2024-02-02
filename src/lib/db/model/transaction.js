@@ -1,3 +1,4 @@
+const { CommandInteraction } = require('discord.js');
 const mongoose = require('mongoose');
 const util = require('../../util');
 
@@ -38,9 +39,14 @@ const transactionSchema = new mongoose.Schema(
                 }
                 return nRec;
             },
-            async getBalance(user) {
-                const transactions = await this.find({ user }).exec();
-
+            /**
+             * @param { CommandInteraction } interaction The original interaction as passed to the command's execute function
+             * @returns { String } User's formatted balance as a string
+             */
+            async getBalance(interaction) {
+                const transactions = await this.find({ user: interaction.user.id }).exec();
+                
+                // TODO: improve balance calculation, this is O(n)
                 let balance = 0;
                 transactions.forEach(rec => {
                     switch (rec.direction) {
@@ -53,7 +59,7 @@ const transactionSchema = new mongoose.Schema(
                     }
                 })
                 
-                return util.roundTo(balance, 2);
+                return util.toCurrency(balance, interaction.locale);
             }
         }
     }
