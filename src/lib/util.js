@@ -1,3 +1,5 @@
+const { Locale } = require('discord.js');
+
 const supportedCurrencies = ['EUR', 'USD'];
 
 module.exports = {
@@ -6,6 +8,13 @@ module.exports = {
     msToString,
 }
 
+/**
+ * 
+ * @param {Number} amount The number to format as currency
+ * @param {Locale} locale The user's locale
+ * @param {String} format The currency to format into, defaults to USD
+ * @returns {String}
+ */
 function toCurrency(amount, locale, format = 'USD') {
     let currency = new Intl.NumberFormat(locale, {
         style: 'currency',
