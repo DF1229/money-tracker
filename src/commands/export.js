@@ -11,10 +11,10 @@ module.exports = {
         log.info(`${interaction.user.username} used the history command`);
         const transactions = await TransactionModel.find({ user: interaction.user.id });
 
-        let transactionData = 'date;amount\n';
+        let transactionData = 'date;amount;description\n';
         transactions.forEach(rec => {
             const direction = rec.direction == 'out' ? '-' : '';
-            transactionData += `${rec.date.toISOString()};${direction}${rec.amount}\n`;
+            transactionData += `${rec.date.toISOString()};${direction}${rec.amount};${rec.description}\n`;
         });
 
         const transactionFile = `/tmp/transactions.csv`;
