@@ -5,8 +5,8 @@ const fs = require('node:fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('history')
-        .setDescription(`Show transaction history`),
+        .setName('export')
+        .setDescription(`Export transaction history to CSV`),
     async execute(interaction) {
         log.info(`${interaction.user.username} used the history command`);
         const transactions = await TransactionModel.find({ user: interaction.user.id });
