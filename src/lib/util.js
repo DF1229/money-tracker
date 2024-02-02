@@ -2,13 +2,17 @@ const supportedCurrencies = ['EUR', 'USD'];
 
 module.exports = {
     supportedCurrencies,
-    formatAsCurrency,
+    toCurrency,
     msToString,
-    roundTo
 }
 
-function formatAsCurrency(amount, currency) {
-    return amount; // TODO
+function toCurrency(amount, locale, format = 'USD') {
+    let currency = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: format,
+    });
+    
+    return currency.format(amount);
 }
 
 function msToString(ms) {
@@ -41,6 +45,12 @@ function msToString(ms) {
     }
 }
 
+/**
+ * 
+ * @param {Number} n Number to round digits of
+ * @param {Integer} digits Number of digits to round to
+ * @returns { String } The number rounder with `digits` amount of digits, as a string
+ */
 function roundTo(n, digits) {
     let negative = false;
 
