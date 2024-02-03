@@ -11,9 +11,10 @@ const transactionSchema = new mongoose.Schema(
         direction: { type: String, enum: ['in', 'out'] },
         description: String,
         currency: { type: String, default: 'USD' },
+        balance: Number,
 
         lastModifiedBy: String,         // Snowflake
-        lastModifiedAt: {type: Date, default: Date.now() },
+        lastModifiedAt: { type: Date, default: Date.now() },
     },
     {
         // Available on records
@@ -28,10 +29,16 @@ const transactionSchema = new mongoose.Schema(
                 const direction = interaction.options.getString('direction');
                 const description = interaction.options.getString('description');
                 const user = interaction.user.id;
-                
+
                 let userRec = await UserModel.findOne({ id: user });
                 if (!userRec) userRec = await UserModel.new(interaction);
                 if (!currency) currency = userRec.currency;
+
+                let balance = await this.getBalance(interaction);
+                if (direction === 'in') 
+                    balance += amount;
+                else if (direction === 'out')
+                    balance -= amount;
 
                 try {
                     var nRec = await this.create({
@@ -41,6 +48,7 @@ const transactionSchema = new mongoose.Schema(
                         direction,
                         description,
                         currency,
+                        balance,
                         lastModifiedBy: user,
                     });
                 } catch (err) {
@@ -51,25 +59,13 @@ const transactionSchema = new mongoose.Schema(
             },
             /**
              * @param { CommandInteraction } interaction The original interaction as passed to the command's execute function
-             * @returns { String } User's formatted balance as a string
+             * @returns { Number } User's balance as a number
              */
             async getBalance(interaction) {
-                const transactions = await this.find({ user: interaction.user.id });
-                
-                // TODO: improve balance calculation, this is O(n)
-                let balance = 0;
-                transactions.forEach(rec => {
-                    switch (rec.direction) {
-                        case 'in':
-                            balance += rec.amount;
-                            break;
-                        case 'out':
-                            balance -= rec.amount;
-                            break;
-                    }
-                });
-                
-                return balance;
+                const transactionRec = await this.findOne({ user: interaction.user.id }).sort({ date: -1 });
+                if (!transactionRec) return 0;
+
+                return transactionRec.balance;
             }
         }
     }
