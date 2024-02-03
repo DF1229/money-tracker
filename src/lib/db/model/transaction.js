@@ -1,6 +1,5 @@
 const { CommandInteraction } = require('discord.js');
 const mongoose = require('mongoose');
-const util = require('../../util');
 
 const transactionSchema = new mongoose.Schema(
     {
@@ -47,7 +46,7 @@ const transactionSchema = new mongoose.Schema(
              * @returns { String } User's formatted balance as a string
              */
             async getBalance(interaction) {
-                const transactions = await this.find({ user: interaction.user.id }).exec();
+                const transactions = await this.find({ user: interaction.user.id });
                 
                 // TODO: improve balance calculation, this is O(n)
                 let balance = 0;
@@ -60,9 +59,9 @@ const transactionSchema = new mongoose.Schema(
                             balance -= rec.amount;
                             break;
                     }
-                })
+                });
                 
-                return util.toCurrency(balance, interaction.locale);
+                return balance;
             }
         }
     }
