@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 const TransactionModel = require('../lib/db/model/transaction');
+const UserModel = require('../lib/db/model/user');
 const log = require('../lib/logger');
 const util = require('../lib/util');
 
@@ -30,9 +31,13 @@ module.exports = {
             return log.error(`Could not register transaction in the database!`);
         }
 
-        const balance = await TransactionModel.getBalance(interaction);
+        let userRec = await UserModel.findOne({ id: interaction.user.id });
+        if (!userRec) userRec = await UserModel.new({ id: interaction.user.id, username: interaction.user.username });
+
+        let balance = await TransactionModel.getBalance(interaction);
         let amount = transRec.direction == 'in' ? transRec.amount : transRec.amount * -1;
-        amount = util.toCurrency(amount, interaction.locale);
+        balance = util.toCurrency(balance, interaction.locale, userRec.currency);
+        amount = util.toCurrency(amount, interaction.locale, userRec.currency);
 
         const transactionEmbed = new EmbedBuilder()
             .setFooter({ text: `ID: ${transRec._id}`})

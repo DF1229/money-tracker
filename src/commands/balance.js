@@ -1,6 +1,8 @@
-const TransactionModel = require('../lib/db/model/transaction');
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
+const TransactionModel = require('../lib/db/model/transaction');
+const UserModel = require('../lib/db/model/user');
 const log = require('../lib/logger');
+const util = require('../lib/util');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +11,12 @@ module.exports = {
     async execute(interaction) {
         log.info(`${interaction.user.username} used the balance command`);
 
-        const balance = await TransactionModel.getBalance(interaction);
+        let userRec = await UserModel.findOne({ id: interaction.user.id });
+        if (!userRec) userRec = await UserModel.new({ id: interaction.user.id, username: interaction.user.username });
+        
+        let balance = await TransactionModel.getBalance(interaction);
+        balance = util.toCurrency(balance, interaction.locale, userRec.currency);
+
         const replyEmbed = new EmbedBuilder()
             .setColor(Colors.Aqua)
             .setFields({ name: 'Balance', value: `${balance}` });
