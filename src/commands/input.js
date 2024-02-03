@@ -32,7 +32,7 @@ module.exports = {
         }
 
         let userRec = await UserModel.findOne({ id: interaction.user.id });
-        if (!userRec) userRec = await UserModel.new({ id: interaction.user.id, username: interaction.user.username });
+        if (!userRec) userRec = await UserModel.new(interaction);
 
         let balance = await TransactionModel.getBalance(interaction);
         let amount = transRec.direction == 'in' ? transRec.amount : transRec.amount * -1;
