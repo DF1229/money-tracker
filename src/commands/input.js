@@ -21,7 +21,16 @@ module.exports = {
             option.setName('direction')
                 .setDescription('Is this money coming in, or going out?')
                 .setChoices({ name: 'in', value: 'in' }, { name: 'out', value: 'out' })
-                .setRequired(true)),
+                .setRequired(true))
+        .addStringOption(option =>
+            option.setName('currency')
+                .setDescription('Optional. Override the currency to be used, defaults to your saved value, or USD')
+                .setRequired(false)
+                .setChoices(
+                    { name: 'US Dollar', value: 'USD' },
+                    { name: 'Euro', value: 'EUR' }
+                )
+        ),
     async execute(interaction) {
         log.info(`${interaction.user.username} used the input command`);
 
@@ -37,10 +46,10 @@ module.exports = {
         let balance = await TransactionModel.getBalance(interaction);
         let amount = transRec.direction == 'in' ? transRec.amount : transRec.amount * -1;
         balance = util.toCurrency(balance, interaction.locale, userRec.currency);
-        amount = util.toCurrency(amount, interaction.locale, userRec.currency);
+        amount = util.toCurrency(amount, interaction.locale, transRec.currency);
 
         const transactionEmbed = new EmbedBuilder()
-            .setFooter({ text: `ID: ${transRec._id}`})
+            .setFooter({ text: `ID: ${transRec._id}` })
             .setColor(Colors.Green)
             .setFields(
                 { name: 'Amount', value: `${amount}`, inline: true },
