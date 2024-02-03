@@ -52,17 +52,10 @@ async function handleCurrencySubcommand(interaction) {
         const value = i.values[0];
 
         let userRec = await UserModel.findOne({ id: interaction.user.id });
-        if (userRec) {
+        if (userRec)
             await userRec.setCurrency(value);
-        } else {
-            const userdata = {
-                id: interaction.user.id,
-                username: interaction.user.username,
-                currency: value
-            };
-
-            userRec = await UserModel.new(userdata);
-        }
+        else
+            userRec = await UserModel.new(interaction, value);
 
         i.reply({
             content: `Got it, your currency preference is now set to ${value}!`,

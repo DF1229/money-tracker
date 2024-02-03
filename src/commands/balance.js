@@ -12,7 +12,7 @@ module.exports = {
         log.info(`${interaction.user.username} used the balance command`);
 
         let userRec = await UserModel.findOne({ id: interaction.user.id });
-        if (!userRec) userRec = await UserModel.new({ id: interaction.user.id, username: interaction.user.username });
+        if (!userRec) userRec = await UserModel.new(interaction);
         
         let balance = await TransactionModel.getBalance(interaction);
         balance = util.toCurrency(balance, interaction.locale, userRec.currency);
