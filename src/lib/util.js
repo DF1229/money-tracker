@@ -6,6 +6,8 @@ module.exports = {
     supportedCurrencies,
     toCurrency,
     msToString,
+    replyError,
+    isValidDate
 }
 
 /**
@@ -54,31 +56,14 @@ function msToString(ms) {
     }
 }
 
-/**
- * 
- * @param {Number} n Number to round digits of
- * @param {Integer} digits Number of digits to round to
- * @returns { String } The number rounder with `digits` amount of digits, as a string
- */
-function roundTo(n, digits) {
-    let negative = false;
+function replyError(interaction, msg) {
+    const embed = new EmbedBuilder()
+        .setColor(Colors.Red)
+        .setDescription(`:no_entry_sign: ${msg}`);
 
-    if (digits === undefined) {
-        digits = 0;
-    }
+    return interaction.reply({ embeds: [embed], ephemeral: true });
+}
 
-    if (n < 0) {
-        negative = true;
-        n = n * -1;
-    }
-
-    let multiplicator = Math.pow(10, digits);
-    n = parseFloat((n * multiplicator).toFixed(11));
-    n = (Math.round(n) / multiplicator).toFixed(digits);
-
-    if (negative) {
-        n = (n * -1).toFixed(digits);
-    }
-
-    return n;
+function isValidDate(input) {
+    return !isNaN(new Date(input));
 }
