@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "csv": "^6.3.6",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.1",
     "mongoose": "^8.1.1"
