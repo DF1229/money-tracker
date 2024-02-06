@@ -1,8 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
+const { toCurrency, isValidDate, replyError } = require('../lib/util');
 const TransactionModel = require('../lib/db/model/transaction');
 const UserModel = require('../lib/db/model/user');
 const log = require('../lib/logger');
-const util = require('../lib/util');
+const moment = require('moment');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,6 +24,10 @@ module.exports = {
                 .setChoices({ name: 'in', value: 'in' }, { name: 'out', value: 'out' })
                 .setRequired(true))
         .addStringOption(option =>
+            option.setName('date')
+                .setDescription('DD/MM/YYYY: Date the transaction occurred, can only lay in the past')
+                .setRequired(false))
+        .addStringOption(option =>
             option.setName('currency')
                 .setDescription('Optional. Override the currency to be used, defaults to your saved value, or USD')
                 .setRequired(false)
@@ -34,10 +39,21 @@ module.exports = {
     async execute(interaction) {
         log.info(`${interaction.user.username} used the input command`);
 
+        let date = interaction.options.getString('date');
+        if (date) {
+            date = moment(date, 'DD-MM-YYYY', true).toDate();
+
+            if (!isValidDate(date))
+                return replyError(interaction, `Date '${interaction.options.getString('date')}' not of recognizable format, did you use DD-MM-YYYY?`);
+
+            if (date > Date.now())
+                return replyError(interaction, `Date '${date.toDateString()}' is in the future.`);
+        }
+
         const transRec = await TransactionModel.new(interaction);
         if (!transRec) {
-            interaction.reply({ content: `Failed to save transaction in database!`, ephemeral: true });
-            return log.error(`Could not register transaction in the database!`);
+            log.error(`Could not register transaction in the database!`);
+            return replyError(interaction, 'Failed to save transaction in database!');
         }
 
         let userRec = await UserModel.findOne({ id: interaction.user.id });
@@ -45,13 +61,14 @@ module.exports = {
 
         let balance = await TransactionModel.getBalance(interaction);
         let amount = transRec.direction == 'in' ? transRec.amount : transRec.amount * -1;
-        balance = util.toCurrency(balance, interaction.locale, userRec.currency);
-        amount = util.toCurrency(amount, interaction.locale, transRec.currency);
+        balance = toCurrency(balance, interaction.locale, userRec.currency);
+        amount = toCurrency(amount, interaction.locale, transRec.currency);
 
         const transactionEmbed = new EmbedBuilder()
             .setFooter({ text: `ID: ${transRec._id}` })
             .setColor(Colors.Green)
             .setFields(
+                { name: 'Date', value: `${transRec.date.toDateString()}`, inline: true },
                 { name: 'Amount', value: `${amount}`, inline: true },
                 { name: 'New balance', value: `${balance}`, inline: true },
                 { name: 'Description', value: `${transRec.description}` },
