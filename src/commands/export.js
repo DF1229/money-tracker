@@ -8,7 +8,7 @@ module.exports = {
         .setName('export')
         .setDescription(`Export transaction history to CSV`),
     async execute(interaction) {
-        log.info(`${interaction.user.username} used the history command`);
+        log.info(`${interaction.user.username} used the export command`);
         const transactions = await TransactionModel.find({ user: interaction.user.id });
 
         let transactionData = 'id;date;currency;amount;description;balance\n';
