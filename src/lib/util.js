@@ -1,4 +1,4 @@
-const { Locale } = require('discord.js');
+const { Locale, EmbedBuilder, Colors } = require('discord.js');
 
 const supportedCurrencies = ['EUR', 'USD'];
 
@@ -61,7 +61,10 @@ function replyError(interaction, msg) {
         .setColor(Colors.Red)
         .setDescription(`:no_entry_sign: ${msg}`);
 
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    if (interaction.deferred)
+        return interaction.followUp({ embeds: [embed], ephemeral: true });
+    else
+        return interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
 function isValidDate(input) {
